@@ -31,6 +31,7 @@ const InfiniteScrollPexels: React.FC = () => {
         const response = await fetch(`${PEXELS_API_URL}&page=${page}`, {
           headers: {
             Authorization: process.env.API_KEY!,
+            "Access-Control-Allow-Origin": "*",
           },
         });
         if (!response.ok) {
