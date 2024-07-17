@@ -2,18 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 
 interface PexelsPhoto {
   id: number;
-  src: {
-    medium: string;
-  };
+  urlToImage: string;
   alt: string;
 }
 
-interface PexelsResponse {
-  photos: PexelsPhoto[];
-  per_page: number;
-}
-
-const PEXELS_API_URL = "https://api.pexels.com/v1/search?query=nature";
+//const PEXELS_API_URL = "https://api.pexels.com/v1/search?query=nature";
 
 const InfiniteScrollPexels: React.FC = () => {
   const [images, setImages] = useState<PexelsPhoto[]>([]);
@@ -28,19 +21,22 @@ const InfiniteScrollPexels: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${PEXELS_API_URL}&page=${page}`, {
-          headers: {
-            Authorization: process.env.REACT_APP_API_KEY!,
-            "Access-Control-Allow-Origin": "*",
-          },
-        });
+        const response = await fetch(
+          `https://newsapi.org/v2/everything?q=nature&pageSize=10&page=${page}`,
+          {
+            headers: {
+              "x-api-key": `1d164230787848c6bdcc1b080d077fba`,
+            },
+          }
+        );
+
         if (!response.ok) {
           console.log(error);
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        const data: PexelsResponse = await response.json();
+        const data = await response.json();
         console.log(data);
-        setImages((prevImages) => [...prevImages, ...data.photos]);
+        setImages((prevImages) => [...prevImages, ...data.articles]);
         setPage((prevPage) => prevPage + 1);
         setLoading(false);
         console.log(`${data.per_page} items loaded`);
@@ -74,16 +70,12 @@ const InfiniteScrollPexels: React.FC = () => {
       />
       <div className="flex flex-wrap justify-center">
         {images.map((image, index) => (
-          <figure
-            key={index}
-            className="m-2 grid grid-rows-[1fr,auto] bg-pink-300"
-          >
-            <img
-              src={image.src.medium}
-              alt={image.alt}
-              style={{ maxWidth: "100%", display: "block" }}
-            />
-          </figure>
+          <img
+            src={image.urlToImage}
+            alt={image.alt}
+            //style={{ maxWidth: "100%", display: "block" }}
+            className="w-1/2 block"
+          />
         ))}
       </div>
       <div
