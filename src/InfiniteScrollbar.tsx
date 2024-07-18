@@ -17,6 +17,8 @@ const InfiniteScrollPexels: React.FC = () => {
   const liveRegionRef = useRef<HTMLDivElement | null>(null);
   const observer = useRef<IntersectionObserver | null>(null);
   const apikey = process.env.REACT_APP_API_KEY;
+  const firstNewImageRef = useRef<HTMLImageElement | null>(null);
+  const prevImageCountRef = useRef(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,6 +30,7 @@ const InfiniteScrollPexels: React.FC = () => {
             headers: {
               "x-api-key": `${apikey}`,
             },
+            mode: "no-cors",
           }
         );
 
@@ -38,6 +41,7 @@ const InfiniteScrollPexels: React.FC = () => {
         const data = await response.json();
         console.log(data);
         setImages((prevImages) => [...prevImages, ...data.articles]);
+        prevImageCountRef.current = images.length;
         setPage((prevPage) => prevPage + 1);
         setLoading(false);
         console.log(`${data.articles.length} items loaded`);
@@ -62,6 +66,12 @@ const InfiniteScrollPexels: React.FC = () => {
     };
   }, [loading, page, error, apikey]);
 
+  useEffect(() => {
+    if (firstNewImageRef.current) {
+      firstNewImageRef.current.focus();
+    }
+  }, [images]);
+
   return (
     <main className="mx-36 w-4/5">
       <div
@@ -75,6 +85,11 @@ const InfiniteScrollPexels: React.FC = () => {
             src={image.urlToImage}
             alt={image.description}
             className="max-w-1/5 block m-2"
+            loading="lazy"
+            width={500}
+            height={500}
+            tabIndex={-1}
+            ref={index === prevImageCountRef.current ? firstNewImageRef : null}
           />
         ))}
       </div>
@@ -84,11 +99,11 @@ const InfiniteScrollPexels: React.FC = () => {
       >
         {loading && (
           <div aria-live="polite" aria-atomic="true">
-            Loading...
+            {loading && !error && <p> Loading</p>}
           </div>
         )}
         <div id="load-more" style={{ height: "20px" }}>
-          Load More
+          {error ? <p>no more images to load</p> : <p>Load More</p>}
         </div>
       </div>
     </main>
