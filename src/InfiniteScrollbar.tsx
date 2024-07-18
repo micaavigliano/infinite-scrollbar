@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 interface PexelsPhoto {
   id: number;
   urlToImage: string;
-  alt: string;
+  description: string;
 }
 
 //const PEXELS_API_URL = "https://api.pexels.com/v1/search?query=nature";
@@ -39,7 +39,7 @@ const InfiniteScrollPexels: React.FC = () => {
         setImages((prevImages) => [...prevImages, ...data.articles]);
         setPage((prevPage) => prevPage + 1);
         setLoading(false);
-        console.log(`${data.per_page} items loaded`);
+        console.log(`${data.articles.length} items loaded`);
       } catch (error) {
         console.error("Error fetching images:", error);
         setError(true);
@@ -62,7 +62,7 @@ const InfiniteScrollPexels: React.FC = () => {
   }, [loading, page, error]);
 
   return (
-    <div className="mx-36 w-4/5">
+    <main className="mx-36 w-4/5">
       <div
         aria-live="polite"
         ref={liveRegionRef}
@@ -72,9 +72,8 @@ const InfiniteScrollPexels: React.FC = () => {
         {images.map((image, index) => (
           <img
             src={image.urlToImage}
-            alt={image.alt}
-            //style={{ maxWidth: "100%", display: "block" }}
-            className="w-1/2 block"
+            alt={image.description}
+            className="max-w-1/5 block m-2"
           />
         ))}
       </div>
@@ -82,12 +81,16 @@ const InfiniteScrollPexels: React.FC = () => {
         ref={loaderRef}
         style={{ height: "100px", backgroundColor: "lightgrey" }}
       >
-        {loading && <div>Loading...</div>}
+        {loading && (
+          <div aria-live="polite" aria-atomic="true">
+            Loading...
+          </div>
+        )}
         <div id="load-more" style={{ height: "20px" }}>
           Load More
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
