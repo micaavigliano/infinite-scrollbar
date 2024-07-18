@@ -16,6 +16,7 @@ const InfiniteScrollPexels: React.FC = () => {
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const liveRegionRef = useRef<HTMLDivElement | null>(null);
   const observer = useRef<IntersectionObserver | null>(null);
+  const apikey = process.env.REACT_APP_API_KEY;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,7 +26,7 @@ const InfiniteScrollPexels: React.FC = () => {
           `https://newsapi.org/v2/everything?q=nature&pageSize=10&page=${page}`,
           {
             headers: {
-              "x-api-key": `1d164230787848c6bdcc1b080d077fba`,
+              "x-api-key": `${apikey}`,
             },
           }
         );
