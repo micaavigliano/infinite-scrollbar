@@ -60,7 +60,7 @@ const InfiniteScrollPexels: React.FC = () => {
         observer.current.disconnect();
       }
     };
-  }, [loading, page, error]);
+  }, [loading, page, error, apikey]);
 
   return (
     <main className="mx-36 w-4/5">
