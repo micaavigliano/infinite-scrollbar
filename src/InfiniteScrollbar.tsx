@@ -39,7 +39,6 @@ const InfiniteScrollPexels: React.FC = () => {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data);
         setImages((prevImages) => [...prevImages, ...data.articles]);
         prevImageCountRef.current = images.length;
         setPage((prevPage) => prevPage + 1);
@@ -64,7 +63,7 @@ const InfiniteScrollPexels: React.FC = () => {
         observer.current.disconnect();
       }
     };
-  }, [loading, page, error, apikey]);
+  }, [loading, page, error, apikey, images.length]);
 
   useEffect(() => {
     if (firstNewImageRef.current) {
