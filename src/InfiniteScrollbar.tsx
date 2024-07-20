@@ -2,21 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 
 interface PexelsPhoto {
   id: number;
-  urlToImage: string;
-  description: string;
+  url: string;
+  title: string;
 }
-
-//const PEXELS_API_URL = "https://api.pexels.com/v1/search?query=nature";
 
 const InfiniteScrollPexels: React.FC = () => {
   const [images, setImages] = useState<PexelsPhoto[]>([]);
-  const [page, setPage] = useState(1);
+  const [data, setData] = useState<PexelsPhoto[]>([]);
+  const [page, setPage] = useState(10);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const liveRegionRef = useRef<HTMLDivElement | null>(null);
   const observer = useRef<IntersectionObserver | null>(null);
-  const apikey = process.env.REACT_APP_API_KEY;
   const firstNewImageRef = useRef<HTMLImageElement | null>(null);
   const prevImageCountRef = useRef(0);
 
@@ -25,13 +23,7 @@ const InfiniteScrollPexels: React.FC = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `https://newsapi.org/v2/everything?q=nature&pageSize=10&page=${page}`,
-          {
-            headers: {
-              "x-api-key": `${apikey}`,
-            },
-            mode: "no-cors",
-          }
+          `https://jsonplaceholder.typicode.com/photos?_page=${page}&_limit=10`
         );
 
         if (!response.ok) {
@@ -39,11 +31,13 @@ const InfiniteScrollPexels: React.FC = () => {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        setImages((prevImages) => [...prevImages, ...data.articles]);
-        prevImageCountRef.current = images.length;
-        setPage((prevPage) => prevPage + 1);
+        console.log(data);
+        setImages((prevImages) => [...prevImages, ...data]);
+        setData(data);
+        setPage((prevPage) => prevPage + 10);
         setLoading(false);
-        console.log(`${data.articles.length} items loaded`);
+        prevImageCountRef.current = images.length;
+        console.log(`${data.length} items loaded`);
       } catch (error) {
         console.error("Error fetching images:", error);
         setError(true);
@@ -63,7 +57,7 @@ const InfiniteScrollPexels: React.FC = () => {
         observer.current.disconnect();
       }
     };
-  }, [loading, page, error, apikey, images.length]);
+  }, [loading, page, error, images.length]);
 
   useEffect(() => {
     if (firstNewImageRef.current) {
@@ -75,14 +69,17 @@ const InfiniteScrollPexels: React.FC = () => {
     <main className="mx-36 w-4/5">
       <div
         aria-live="polite"
+        aria-atomic="true"
         ref={liveRegionRef}
         className="absolute top-full left-0"
       />
+      <p>{data.length} loaded</p>
       <div className="flex flex-wrap justify-center">
         {images.map((image, index) => (
           <img
-            src={image.urlToImage}
-            alt={image.description}
+            key={image.id}
+            src={image.url}
+            alt={image.title}
             className="max-w-1/5 block m-2"
             loading="lazy"
             width={500}
