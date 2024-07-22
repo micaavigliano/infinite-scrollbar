@@ -6,43 +6,52 @@ interface PexelsPhoto {
   title: string;
 }
 
-const InfiniteScrollPexels: React.FC = () => {
+const InfiniteScroll: React.FC = () => {
   const [images, setImages] = useState<PexelsPhoto[]>([]);
-  const [data, setData] = useState<PexelsPhoto[]>([]);
-  const [page, setPage] = useState(10);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const loaderRef = useRef<HTMLDivElement | null>(null);
-  const liveRegionRef = useRef<HTMLDivElement | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const observer = useRef<IntersectionObserver | null>(null);
   const firstNewImageRef = useRef<HTMLImageElement | null>(null);
   const prevImageCountRef = useRef(0);
+  const liveRegionRef = useRef<HTMLDivElement | null>(null);
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setLoadingMessage("Loading...");
       try {
         const response = await fetch(
           `https://jsonplaceholder.typicode.com/photos?_page=${page}&_limit=10`
         );
 
         if (!response.ok) {
-          console.log(error);
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data);
-        setImages((prevImages) => [...prevImages, ...data]);
-        setData(data);
-        setPage((prevPage) => prevPage + 10);
-        setLoading(false);
-        prevImageCountRef.current = images.length;
-        console.log(`${data.length} items loaded`);
+
+        setTimeout(() => {
+          setImages((prevImages) => [...prevImages, ...data]);
+          setPage((prevPage) => prevPage + 1);
+          setLoading(false);
+          prevImageCountRef.current = images.length;
+
+          setLoadingMessage(`${data.length} items loaded`);
+        }, 1000);
       } catch (error) {
         console.error("Error fetching images:", error);
         setError(true);
+        setLoading(false);
+
+        setLoadingMessage("Error fetching images.");
       }
     };
+
+    if (observer.current) {
+      observer.current.disconnect();
+    }
 
     observer.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !loading) {
@@ -57,24 +66,35 @@ const InfiniteScrollPexels: React.FC = () => {
         observer.current.disconnect();
       }
     };
-  }, [loading, page, error, images.length]);
+  }, [loading, page, images.length]);
 
   useEffect(() => {
-    if (firstNewImageRef.current) {
+    if (images.length > prevImageCountRef.current && firstNewImageRef.current) {
       firstNewImageRef.current.focus();
     }
   }, [images]);
 
+  useEffect(() => {
+    if (headingRef.current) {
+      headingRef.current.focus();
+    }
+  }, []);
+
   return (
     <main className="mx-36 w-4/5">
       <div
-        aria-live="polite"
+        aria-live="assertive"
         aria-atomic="true"
         ref={liveRegionRef}
         className="absolute top-full left-0"
-      />
-      <p>{data.length} loaded</p>
-      <div className="flex flex-wrap justify-center">
+      >
+        {loadingMessage}
+      </div>
+      <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-bold mb-4">
+        Image Gallery
+      </h1>
+
+      <div className="flex flex-wrap justify-center" role="feed">
         {images.map((image, index) => (
           <img
             key={image.id}
@@ -82,28 +102,32 @@ const InfiniteScrollPexels: React.FC = () => {
             alt={image.title}
             className="max-w-1/5 block m-2"
             loading="lazy"
-            width={500}
-            height={500}
+            width={300}
+            height={300}
             tabIndex={-1}
             ref={index === prevImageCountRef.current ? firstNewImageRef : null}
           />
         ))}
       </div>
-      <div
-        ref={loaderRef}
-        style={{ height: "100px", backgroundColor: "lightgrey" }}
-      >
-        {loading && (
-          <div aria-live="polite" aria-atomic="true">
-            {loading && !error && <p> Loading</p>}
-          </div>
-        )}
-        <div id="load-more" style={{ height: "20px" }}>
-          {error ? <p>no more images to load</p> : <p>Load More</p>}
+      <section className="h-24 bg-gray-200">
+        <div
+          id="load-more"
+          className={`transition-opacity duration-500 ${
+            loading || error ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ height: "20px" }}
+        >
+          {error ? (
+            <p aria-live="assertive" aria-atomic="true">
+              No more images to load
+            </p>
+          ) : (
+            <p>Load More</p>
+          )}
         </div>
-      </div>
+      </section>
     </main>
   );
 };
 
-export default InfiniteScrollPexels;
+export default InfiniteScroll;
