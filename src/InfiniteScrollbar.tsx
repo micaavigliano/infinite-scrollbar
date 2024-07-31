@@ -15,7 +15,7 @@ const InfiniteScroll: React.FC = () => {
   const observer = useRef<IntersectionObserver | null>(null);
   const firstNewImageRef = useRef<HTMLImageElement | null>(null);
   const prevImageCountRef = useRef(0);
-  const liveRegionRef = useRef<HTMLDivElement | null>(null);
+  // const liveRegionRef = useRef<HTMLDivElement | null>(null);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
 
   useEffect(() => {
@@ -33,6 +33,7 @@ const InfiniteScroll: React.FC = () => {
         const data = await response.json();
 
         setTimeout(() => {
+          console.log(data);
           setImages((prevImages) => [...prevImages, ...data]);
           setPage((prevPage) => prevPage + 1);
           setLoading(false);
@@ -81,20 +82,17 @@ const InfiniteScroll: React.FC = () => {
   }, []);
 
   return (
-    <main className="mx-36 w-4/5">
-      <div
-        aria-live="assertive"
-        aria-atomic="true"
-        ref={liveRegionRef}
-        className="absolute top-full left-0"
-      >
-        {loadingMessage}
-      </div>
+    <div
+      className="w-3/5 h-[70vh] overflow-y-scroll scroll-smoot mt-6"
+      role="feed"
+      aria-busy={loading ? true : false}
+    >
+      <div className="absolute top-full left-0">{loadingMessage}</div>
       <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-bold mb-4">
         Image Gallery
       </h1>
 
-      <div className="flex flex-wrap justify-center" role="feed">
+      <div className="flex flex-wrap justify-center">
         {images.map((image, index) => (
           <img
             key={image.id}
@@ -102,14 +100,14 @@ const InfiniteScroll: React.FC = () => {
             alt={image.title}
             className="max-w-1/5 block m-2"
             loading="lazy"
-            width={300}
-            height={300}
-            tabIndex={-1}
+            width={200}
+            height={200}
+            tabIndex={0}
             ref={index === prevImageCountRef.current ? firstNewImageRef : null}
           />
         ))}
       </div>
-      <section className="h-24 bg-gray-200">
+      <section className="bg-gray-200">
         <div
           id="load-more"
           className={`transition-opacity duration-500 ${
@@ -126,7 +124,7 @@ const InfiniteScroll: React.FC = () => {
           )}
         </div>
       </section>
-    </main>
+    </div>
   );
 };
 
